@@ -189,7 +189,7 @@ public class RegisterDialog extends javax.swing.JDialog {
             System.out.print(" | ");
             System.out.print(rs.getString("tckn"));
             System.out.print(" | ");
-            System.out.print(rs.getString("sifre"));
+            System.out.println(rs.getString("sifre"));
         }
     }
     
