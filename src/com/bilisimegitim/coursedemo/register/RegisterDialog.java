@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -163,34 +164,52 @@ public class RegisterDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        try {
+            String tckn = jTextField3.getText().trim();
+            boolean kayitBulundu = kayitKontrol(tckn);
+            if(kayitBulundu == true){
+                JOptionPane.showMessageDialog(null, "Bu tckn kullanımda");
+            } else {
+                //kayitTamamla();
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex.getMessage());
+        }
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        try {
-            sorgula();
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(RegisterDialog.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(RegisterDialog.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
     }//GEN-LAST:event_jButton2ActionPerformed
 
     
-    private void sorgula() throws ClassNotFoundException, SQLException{
-        Class.forName("com.mysql.jdbc.Driver");
-        Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/adem?zeroDateTimeBehavior=convertToNull","root","");
-        Statement stmt = con.createStatement();
-        ResultSet rs = stmt.executeQuery("select * from musteri");
-        while(rs.next()){
-            System.out.print(rs.getString("musteri_ad"));
-            System.out.print(" | ");
-            System.out.print(rs.getString("musteri_soyad"));
-            System.out.print(" | ");
-            System.out.print(rs.getString("tckn"));
-            System.out.print(" | ");
-            System.out.println(rs.getString("sifre"));
+    private boolean kayitKontrol(String tckn) throws Exception{
+        boolean kayitBulundu = false;
+        Connection con = null;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/adem?zeroDateTimeBehavior=convertToNull","root","");
+            Statement stmt = con.createStatement();
+            String sqlStr = "select * from kullanici where tckn='" + tckn + "'";
+            ResultSet rs = stmt.executeQuery(sqlStr);
+            if(rs.next()){
+                kayitBulundu = true;
+            }
+
+        } catch (SQLException ex) {
+            throw new Exception("Sql hatası oluştu");
+        } catch (ClassNotFoundException ex) {
+            throw new Exception("Driver bulunamadı");
+        }finally{
+            if(con != null){
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(RegisterDialog.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
+        return kayitBulundu;
     }
     
     /**
