@@ -8,7 +8,16 @@ package com.bilisimegitim.coursedemo.entrypoint;
 
 import com.bilisimegitim.coursedemo.main.MainForm;
 import com.bilisimegitim.coursedemo.register.RegisterDialog;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  *
@@ -46,7 +55,7 @@ public class GirisForm extends javax.swing.JFrame {
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/bilisimegitim/coursedemo/resource/person.png"))); // NOI18N
 
-        jLabel2.setText("User name :");
+        jLabel2.setText("Tckno :");
 
         jLabel3.setText("Password : ");
 
@@ -83,7 +92,7 @@ public class GirisForm extends javax.swing.JFrame {
                                 .addComponent(jButton2))
                             .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 119, Short.MAX_VALUE))
+                        .addGap(0, 121, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -118,60 +127,102 @@ public class GirisForm extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        if(hataKontrol()==false){
+            return;
+        }
         girisKontrol();
+        
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    private void girisKontrol(){
+    private boolean hataKontrol(){
         String userName = jTextField1.getText().trim();
         String password = new String(jPasswordField1.getPassword());
         if(userName.equals("")){
             JOptionPane.showMessageDialog(this, "Lütfen kullanıcı adını boş bırakmayınız.");
-            return;
+            return false;
         }
         if(password.trim().equals("")){
             JOptionPane.showMessageDialog(this, "Lütfen şifreyi boş bırakmayınız.");
-            return;
+            return false;
         }
-        if(!userName.equals("Adem")){
-            JOptionPane.showMessageDialog(this, "Kullanıcı adı yanlış");
-            return;
-        }
-        if(!password.equals("55555")){
-            JOptionPane.showMessageDialog(this, "Şifre yanlış");
-            return;
-        }
+        
        
         
-        new MainForm().setVisible(true); 
+        return true;
         //String date = DateUtil.dateToStr(new Date(), "dd/MM/yyyy");
     }
+    private void girisKontrol(){
+        String tckn=jTextField1.getText().trim();
+        Connection con = null;
+        boolean kontrol=false;
+        
+        try {            
+            Class.forName("com.mysql.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/oktay?zeroDateTimeBehavior=convertToNull","root","");
+            String sqlStr = "select * from kullanici where tckn=?";
+            PreparedStatement pstmt = con.prepareStatement(sqlStr);
+            pstmt.setString(1, tckn);
+            ResultSet rs = pstmt.executeQuery();
+            if(rs.next()){
+               String sifre=new String(jPasswordField1.getPassword());
+               String dataSifre=rs.getString("sifre");
+               if(sifre.equals(dataSifre))
+               {
+                   kontrol=true;
+               }
+               else
+               {
+                   JOptionPane.showMessageDialog(this, "Hatalı şifre");
+               }
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "Hatalı Tckno");
+            }
+            if(kontrol)
+            {
+                MainForm mainform = new MainForm();
+                mainform.setVisible(true);
+            }
+            
+        } catch (ClassNotFoundException | SQLException ex) {
+            Logger.getLogger(GirisForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    } 
     
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
         try {
+            /* Set the Nimbus look and feel */
+            //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+            /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+            * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+            */
+            UIManager.setLookAndFeel( new com.nilo.plaf.nimrod.NimRODLookAndFeel());
+            /*try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
+            System.out.println(info.getName());
+            if ("Nimbus".equals(info.getName())) {
+            
+            javax.swing.UIManager.setLookAndFeel(info.getClassName());
+            break;
             }
-        } catch (ClassNotFoundException ex) {
+            }
+            
+            } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(GirisForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
+            } catch (InstantiationException ex) {
             java.util.logging.Logger.getLogger(GirisForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
+            } catch (IllegalAccessException ex) {
             java.util.logging.Logger.getLogger(GirisForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(GirisForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }*/
+            //</editor-fold>
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(GirisForm.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
